@@ -122,13 +122,14 @@ class GcnMoleculeNetTrainer(ModelTrainer):
             model_list.append(model)
             score_list.append(score)
             logging.info('Client {}, Test {} = {}'.format(client_idx,args.metric.upper(), score))
-            wandb.log({"Client {} Test/{}".format(client_idx,args.metric.upper()): score})
+            if client_idx = 0:
+               wandb.log({"Client {} Test/{}".format(client_idx,args.metric.upper()): score})
 
                 
         avg_score = list(map(lambda x: sum(x) / len(x), zip(*score_list)))
 
         logging.info('Test {} score = {}'.format(args.metric.upper(),avg_score))
-        wandb.log({"Test/{}}".format(args.metric.upper()): avg_score})
+        #wandb.log({"Test/{}}".format(args.metric.upper()): avg_score})
         
         return True
         

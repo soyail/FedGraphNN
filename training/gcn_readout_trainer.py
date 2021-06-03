@@ -119,6 +119,8 @@ class GcnMoleculeNetTrainer(ModelTrainer):
         logging.info("----------test_on_the_server--------")
 
         model_list, score_list = [], []
+        # for comparasion between fedavg and feddpsgd, we only test case client_idx=0.
+        """
         for client_idx in test_data_local_dict.keys():
             test_data = test_data_local_dict[client_idx]
             score, model = self.test(test_data, device, args)
@@ -131,7 +133,17 @@ class GcnMoleculeNetTrainer(ModelTrainer):
         avg_score = np.mean(np.array(score_list))
         logging.info('Test ROC-AUC Score = {}'.format(avg_score))
         wandb.log({"Test/ROC-AUC": avg_score})
+        """
+        test_data = test_data_local_dict[0]
+        score, model = self.test(test_data, device, args)
+        logging.info('client 0, Test ROC-AUC score = {}'.format(score))
+        wandb.log({"Test/ROC-AUC":score})
         return True
+  
+    def test_on_the_client(self, test_data, device, args=None):
+        logging.info("-----------test_on_the_client-----------")
+        score, model = self.test(test_data, device, args)
+        return score
 
     def _compare_models(self, model_1, model_2):
         models_differ = 0

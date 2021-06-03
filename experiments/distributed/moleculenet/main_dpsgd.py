@@ -17,7 +17,7 @@ from model.gcn_readout import GcnMoleculeNet
 from training.sage_readout_trainer import SageMoleculeNetTrainer
 from training.gat_readout_trainer import GatMoleculeNetTrainer
 from training.gcn_readout_trainer import GcnMoleculeNetTrainer
-from FedML.fedml_api.distributed.fedavg.FedAvgAPI import FedML_init, FedML_FedAvg_distributed
+from FedML.fedml_api.distributed.fedavg.FedAvgAPI import FedML_init, FedML_DPSGD_distributed
 
 
 def add_args(parser):
@@ -101,9 +101,6 @@ def add_args(parser):
 
     parser.add_argument('--ci', type=int, default=0,
                         help='CI')
-
-    parser.add_argument('--backend', type=str, default="mpi",
-                        help='comm backend')
     args = parser.parse_args()
     return args
 
@@ -215,13 +212,14 @@ if __name__ == "__main__":
     logging.info("process_id = %d, size = %d" % (process_id, worker_number))
 
     # initialize the wandb machine learning experimental tracking platform (https://www.wandb.com/).
-    if process_id == 0:
+    if process_id == 1:
         wandb.init(
             # project="federated_nas",
             project="fedmolecule",
             name="FedMolecule(d)" + str(args.model) + "r" + str(args.dataset) + "-lr" + str(args.lr),
             config=args
         )
+
     # Set the random seed. The np.random seed determines the dataset partition.
     # The torch_manual_seed determines the initial weight.
     # We fix these two, so that we can reproduce the result.
@@ -255,7 +253,7 @@ if __name__ == "__main__":
     model, trainer = create_model(args, args.model, feat_dim, num_cats, output_dim=None)
 
     # start "federated averaging (FedAvg)"
-    FedML_FedAvg_distributed(process_id, worker_number, device, comm,
+    FedML_DPSGD_distributed(process_id, worker_number, device, comm,
                              model, train_data_num, train_data_global, test_data_global,
                              data_local_num_dict, train_data_local_dict, test_data_local_dict, args,
                              trainer)
